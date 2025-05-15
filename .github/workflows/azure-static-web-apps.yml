@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: '16'
       - name: Install & Build JS Sample
-        working-directory: JavaScript\(v4.0\)
+        working-directory: JavaScript(v4.0\)
         run: |
           npm ci
           npm run build
