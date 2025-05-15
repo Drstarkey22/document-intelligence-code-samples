@@ -1,0 +1,59 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    if: >
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build, then Deploy Job
+
+    steps:
+      # 1) checkout your repo
+      - uses: actions/checkout@v3
+
+      # 2) install Node (v16)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # 3) build the JavaScript sample
+      - name: Install & Build JavaScript Sample
+        working-directory: JavaScript\(v4.0\)
+        run: |
+          npm ci
+          npm run build
+
+      # 4) deploy the pre-built folder
+      - name: Deploy to Azure Static Web Apps
+        id: swa
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_HILL_0B7F9A910 }}
+          repo_token:                 ${{ secrets.GITHUB_TOKEN }}
+          action:                     "upload"
+          skip_app_build:             true
+          app_location:               ""  
+          api_location:               ""  
+          output_location:            "JavaScript(v4.0)/build"
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_HILL_0B7F9A910 }}
+          action:                     "close"
