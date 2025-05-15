@@ -28,8 +28,8 @@ jobs:
         run: |
           echo "🔍 Repo root files:" && ls -1
           cd "JavaScript(v4.0)"
-          npm install            # ← plain install (no lockfile)
-          npm run build          # ← produces ./build folder
+          npm install
+          npm run build
           echo "🔍 Build output files:" && ls -1 build
 
       - name: Deploy to Azure Static Web Apps
@@ -38,8 +38,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_HILL_0B7F9A910 }}
           repo_token:                 ${{ secrets.GITHUB_TOKEN }}
           action:                     upload
+          skip_app_build:             true
           app_location:               'JavaScript(v4.0)/build'
-          api_location:               '' 
+          api_location:               ''
           output_location:            ''
 
   close_pr:
