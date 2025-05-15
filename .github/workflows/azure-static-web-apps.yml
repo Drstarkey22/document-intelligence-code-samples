@@ -2,10 +2,12 @@ name: Azure Static Web Apps CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
     types: [opened, synchronize, reopened, closed]
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build_and_deploy:
@@ -13,9 +15,11 @@ jobs:
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    name: Build & Deploy JS Sample
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Setup Node.js 16
         uses: actions/setup-node@v3
@@ -24,20 +28,32 @@ jobs:
 
       - name: Install & Build JavaScript(v4.0)
         run: |
-          echo "Repo root:" && ls -1
-          cd "JavaScript(v4.0)"
-          echo "Inside JS folder:" && ls -1
+          echo "Repo root contents:" && ls -1
+          cd 'JavaScript(v4.0)'
+          echo "Inside JavaScript(v4.0):" && ls -1
           npm ci
           npm run build
-          echo "Build output:" && ls -1 build
+          echo "Build folder contents:" && ls -1 build
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_HILL_0B7F9A910 }}
-          repo_token:     ${{ secrets.GITHUB_TOKEN }}
-          action:         upload
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
           skip_app_build: true
-          app_location:   "JavaScript(v4.0)/build"
-          api_location:   ""
-          output_location:""
+          app_location: 'JavaScript(v4.0)/build'
+          api_location: ''
+          output_location: ''
+
+  close_pr:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Preview Environment
+    steps:
+      - name: Close PR deployment
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_HILL_0B7F9A910 }}
+          action: close
+
